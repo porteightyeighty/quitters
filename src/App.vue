@@ -1,10 +1,20 @@
 <script setup>
+import { useRouter } from 'vue-router'
 import { useAuthStore } from './stores/auth'
 import { useThemeStore } from './stores/theme'
+import { useTrackingStore } from './stores/tracking'
 import { RouterLink, RouterView } from 'vue-router'
 
+const router = useRouter()
 const auth = useAuthStore()
 const theme = useThemeStore()
+const tracking = useTrackingStore()
+
+function handleLogout() {
+  auth.logout()
+  tracking.clearEntries()
+  router.push('/')
+}
 </script>
 
 <template>
@@ -62,7 +72,7 @@ const theme = useThemeStore()
                 Settings
               </RouterLink>
               <button 
-                @click="auth.logout()" 
+                @click="handleLogout" 
                 class="px-4 py-2 text-sm rounded-lg transition-colors"
                 :class="theme.isDark 
                   ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
@@ -19,6 +19,7 @@ async function handleLogin() {
   
   try {
     await auth.login(email.value, password.value)
+    await nextTick()
     router.push('/')
   } catch (e) {
     error.value = e.message || 'Invalid email or password'

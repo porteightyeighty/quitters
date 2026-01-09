@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
@@ -20,7 +20,8 @@ async function handleRegister() {
   
   try {
     await auth.register(email.value, password.value, username.value)
-    router.push('/settings')
+    await nextTick()
+    router.push('/')
   } catch (e) {
     error.value = e.message || 'Registration failed'
   } finally {
