@@ -32,19 +32,19 @@ function updateUserLastUseDate(userId) {
 }
 
 // After creating a tracking entry, update the user's last_use_date
-onRecordAfterCreateRequest((e) => {
+onRecordAfterCreateSuccess((e) => {
     const userId = e.record.get("user");
     updateUserLastUseDate(userId);
 }, "tracking_entries");
 
 // After updating a tracking entry, update the user's last_use_date
-onRecordAfterUpdateRequest((e) => {
+onRecordAfterUpdateSuccess((e) => {
     const userId = e.record.get("user");
     updateUserLastUseDate(userId);
 }, "tracking_entries");
 
 // After deleting a tracking entry, update the user's last_use_date
-onRecordAfterDeleteRequest((e) => {
+onRecordAfterDeleteSuccess((e) => {
     const userId = e.record.get("user");
     updateUserLastUseDate(userId);
 }, "tracking_entries");
