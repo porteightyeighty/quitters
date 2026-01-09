@@ -4,16 +4,21 @@ import pb from '../lib/pocketbase'
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref(pb.authStore.model)
-  const isLoggedIn = computed(() => pb.authStore.isValid)
+  const token = ref(pb.authStore.token)
+  
+  // isLoggedIn must be based on reactive refs, not pb.authStore directly
+  const isLoggedIn = computed(() => !!token.value && !!user.value)
 
-  // Listen for auth changes
-  pb.authStore.onChange(() => {
-    user.value = pb.authStore.model
-  })
+  // Listen for auth changes (e.g., token expiry, external changes)
+  pb.authStore.onChange((newToken, model) => {
+    token.value = newToken
+    user.value = model
+  }, true)
 
   async function login(email, password) {
     const authData = await pb.collection('users').authWithPassword(email, password)
     user.value = authData.record
+    token.value = pb.authStore.token
     return authData
   }
 
@@ -23,18 +28,17 @@ export const useAuthStore = defineStore('auth', () => {
       password,
       passwordConfirm: password,
       username,
-      quit_date: null,
       is_public: true
     }
-    const record = await pb.collection('users').create(data)
-    await login(email, password)
-    return record
+    await pb.collection('users').create(data)
+    // Login after registration
+    return await login(email, password)
   }
 
   function logout() {
     pb.authStore.clear()
     user.value = null
-    // Note: tracking store should be cleared separately if needed
+    token.value = ''
   }
 
   async function updateProfile(data) {
@@ -46,6 +50,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   return {
     user,
+    token,
     isLoggedIn,
     login,
     register,
