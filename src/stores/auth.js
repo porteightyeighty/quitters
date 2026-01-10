@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import pb from '../lib/pocketbase'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(pb.authStore.model)
+  const user = ref(pb.authStore.record)
   const token = ref(pb.authStore.token)
   
   // isLoggedIn must be based on reactive refs, not pb.authStore directly

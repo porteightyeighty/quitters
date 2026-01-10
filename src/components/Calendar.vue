@@ -4,6 +4,7 @@ import { useTrackingStore } from '../stores/tracking'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
 
+
 const tracking = useTrackingStore()
 const auth = useAuthStore()
 const theme = useThemeStore()
@@ -43,22 +44,22 @@ function nextMonth() {
 const calendarDays = computed(() => {
   const year = currentYear.value
   const month = currentMonth.value
-  
+
   const firstDay = new Date(year, month, 1).getDay()
   const daysInMonth = new Date(year, month + 1, 0).getDate()
-  
+
   const days = []
-  
+
   for (let i = 0; i < firstDay; i++) {
     days.push({ day: null, date: null })
   }
-  
+
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day)
     const dateStr = date.toISOString().split('T')[0]
     days.push({ day, date: dateStr })
   }
-  
+
   return days
 })
 
@@ -134,34 +135,23 @@ onMounted(() => {
 </script>
 
 <template>
-  <div 
-    class="rounded-xl shadow-sm p-6 transition-colors duration-200"
-    :class="theme.isDark ? 'bg-gray-800' : 'bg-white'"
-  >
+  <div class="rounded-xl shadow-sm p-6 transition-colors duration-200"
+    :class="theme.isDark ? 'bg-gray-800' : 'bg-white'">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
-      <button 
-        @click="previousMonth"
-        class="p-2 rounded-lg transition-colors"
-        :class="theme.isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'"
-      >
+      <button @click="previousMonth" class="p-2 rounded-lg transition-colors"
+        :class="theme.isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'">
         ←
       </button>
-      <h3 
-        class="text-lg font-semibold"
-        :class="theme.isDark ? 'text-white' : 'text-gray-800'"
-      >
+      <h3 class="text-lg font-semibold" :class="theme.isDark ? 'text-white' : 'text-gray-800'">
         {{ monthName }} {{ currentYear }}
       </h3>
-      <button 
-        @click="nextMonth"
-        class="p-2 rounded-lg transition-colors"
-        :class="theme.isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'"
-      >
+      <button @click="nextMonth" class="p-2 rounded-lg transition-colors"
+        :class="theme.isDark ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100'">
         →
       </button>
     </div>
-    
+
     <!-- Legend -->
     <div class="flex flex-wrap gap-3 mb-4 text-xs">
       <div class="flex items-center gap-1">
@@ -177,113 +167,75 @@ onMounted(() => {
         <span :class="theme.isDark ? 'text-gray-400' : 'text-gray-600'">NRT</span>
       </div>
     </div>
-    
+
     <!-- Weekday headers -->
     <div class="grid grid-cols-7 gap-1 mb-2">
-      <div 
-        v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" 
-        :key="day"
-        class="text-center text-xs font-medium py-1"
-        :class="theme.isDark ? 'text-gray-500' : 'text-gray-500'"
-      >
+      <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day"
+        class="text-center text-xs font-medium py-1" :class="theme.isDark ? 'text-gray-500' : 'text-gray-500'">
         {{ day }}
       </div>
     </div>
-    
+
     <!-- Calendar grid -->
     <div class="grid grid-cols-7 gap-1">
-      <div 
-        v-for="({ day, date }, index) in calendarDays" 
-        :key="index"
-        @click="selectDate(date)"
-        class="aspect-square flex items-center justify-center text-sm rounded-lg transition relative"
-        :class="{
+      <div v-for="({ day, date }, index) in calendarDays" :key="index" @click="selectDate(date)"
+        class="aspect-square flex items-center justify-center text-sm rounded-lg transition relative" :class="{
           'cursor-pointer': day && !isFuture(date),
           'cursor-not-allowed opacity-40': day && isFuture(date),
           'ring-2 ring-indigo-500': day && isToday(date),
           [getEntryColor(getEntryType(date))]: day && getEntryType(date),
           'text-white': day && getEntryType(date),
           [theme.isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100']: day && !getEntryType(date) && !isFuture(date)
-        }"
-      >
+        }">
         {{ day }}
       </div>
     </div>
-    
-    <p 
-      class="text-xs mt-4 text-center"
-      :class="theme.isDark ? 'text-gray-500' : 'text-gray-400'"
-    >
+
+    <p class="text-xs mt-4 text-center" :class="theme.isDark ? 'text-gray-500' : 'text-gray-400'">
       Click a date to log nicotine use
     </p>
   </div>
 
   <!-- Modal -->
   <Teleport to="body">
-    <div 
-      v-if="showModal" 
-      class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      @click.self="showModal = false"
-    >
-      <div 
-        class="rounded-xl shadow-xl p-6 w-full max-w-sm"
-        :class="theme.isDark ? 'bg-gray-800' : 'bg-white'"
-      >
-        <h3 
-          class="text-lg font-semibold mb-1"
-          :class="theme.isDark ? 'text-white' : 'text-gray-800'"
-        >
-          {{ new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' }) }}
+    <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      click.self="showModal = false">
+
+      <div class="rounded-xl shadow-xl p-6 w-full max-w-sm" :class="theme.isDark ? 'bg-gray-800' : 'bg-white'">
+        <h3 class="text-lg font-semibold mb-1" :class="theme.isDark ? 'text-white' : 'text-gray-800'">
+          {{ new Date(selectedDate + ' 12:00:00').toLocaleDateString('en-US', {
+            weekday: 'long', month: 'long', day:
+              'numeric'
+          }) }}
         </h3>
-        <p 
-          class="text-sm mb-4"
-          :class="theme.isDark ? 'text-gray-400' : 'text-gray-500'"
-        >
+        <p class="text-sm mb-4" :class="theme.isDark ? 'text-gray-400' : 'text-gray-500'">
           {{ selectedEntry ? 'Update or clear this entry' : 'What did you use?' }}
         </p>
-        
+
         <div class="space-y-2">
-          <button
-            v-for="type in entryTypes"
-            :key="type.value"
-            @click="setEntryType(type.value)"
-            :disabled="saving"
-            class="w-full py-3 px-4 rounded-lg text-left transition flex items-center justify-between"
-            :class="[
-              selectedEntry?.type === type.value 
-                ? type.color + ' text-white' 
-                : theme.isDark 
+          <button v-for="type in entryTypes" :key="type.value" @click="setEntryType(type.value)" :disabled="saving"
+            class="w-full py-3 px-4 rounded-lg text-left transition flex items-center justify-between" :class="[
+              selectedEntry?.type === type.value
+                ? type.color + ' text-white'
+                : theme.isDark
                   ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-            ]"
-          >
+            ]">
             <span>{{ type.label }}</span>
             <span v-if="selectedEntry?.type === type.value">✓</span>
           </button>
         </div>
-        
-        <div 
-          class="mt-4 pt-4 border-t flex gap-2"
-          :class="theme.isDark ? 'border-gray-700' : ''"
-        >
-          <button
-            v-if="selectedEntry"
-            @click="clearEntry"
-            :disabled="saving"
-            class="flex-1 py-2 px-4 rounded-lg transition disabled:opacity-50"
-            :class="theme.isDark 
-              ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-          >
+
+        <div class="mt-4 pt-4 border-t flex gap-2" :class="theme.isDark ? 'border-gray-700' : ''">
+          <button v-if="selectedEntry" @click="clearEntry" :disabled="saving"
+            class="flex-1 py-2 px-4 rounded-lg transition disabled:opacity-50" :class="theme.isDark
+              ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
             Clear Entry
           </button>
-          <button
-            @click="showModal = false"
-            class="flex-1 py-2 px-4 rounded-lg transition"
-            :class="theme.isDark 
-              ? 'bg-gray-700 text-gray-200 hover:bg-gray-600' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
-          >
+          <button @click="showModal = false" class="flex-1 py-2 px-4 rounded-lg transition" :class="theme.isDark
+            ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'">
             Cancel
           </button>
         </div>

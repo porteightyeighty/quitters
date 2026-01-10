@@ -9,6 +9,7 @@ export const useTrackingStore = defineStore('tracking', () => {
 
   const auth = useAuthStore()
 
+
   // Get entries for a specific month
   async function fetchEntriesForMonth(year, month) {
     if (!auth.user) return
@@ -55,7 +56,7 @@ export const useTrackingStore = defineStore('tracking', () => {
     
     try {
       // Check if entry exists for this date
-      const existing = entries.value.find(e => e.date === dateStr)
+      const existing = entries.value.find(e => e.date.split(' ')[0] === dateStr)
       
       let result
       if (existing) {
@@ -72,9 +73,8 @@ export const useTrackingStore = defineStore('tracking', () => {
         })
         entries.value.push(result)
       }
-      
-      // Note: last_use_date is updated automatically by PocketBase hooks
-      
+      // last_use_date is updated automatically by PocketBase hooks
+
       return result
     } catch (e) {
       console.error('Failed to set entry:', e)
@@ -87,13 +87,13 @@ export const useTrackingStore = defineStore('tracking', () => {
     if (!auth.user) return
     
     const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date
-    const existing = entries.value.find(e => e.date === dateStr)
+    const existing = entries.value.find(e => e.date.split(' ')[0] === dateStr)
     
     if (existing) {
       try {
         await pb.collection('tracking_entries').delete(existing.id)
         entries.value = entries.value.filter(e => e.id !== existing.id)
-        // Note: last_use_date is updated automatically by PocketBase hooks
+        // last_use_date is updated automatically by PocketBase hooks
       } catch (e) {
         console.error('Failed to remove entry:', e)
         throw e
@@ -104,7 +104,7 @@ export const useTrackingStore = defineStore('tracking', () => {
   // Get entry for a specific date
   function getEntryForDate(date) {
     const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date
-    return entries.value.find(e => e.date === dateStr)
+    return entries.value.find(e => e.date.split(' ')[0] === dateStr)
   }
 
   // Calculate days since last nicotine use
