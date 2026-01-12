@@ -9,6 +9,17 @@ const theme = useThemeStore()
 const isPublic = ref(auth.user?.is_public ?? true)
 const saving = ref(false)
 const message = ref('')
+const copied = ref(false)
+
+const publicUrl = `${window.location.origin}/user/${auth.user?.id}`
+
+function copyLink() {
+  navigator.clipboard.writeText(publicUrl)
+  copied.value = true
+  setTimeout(() => {
+    copied.value = false
+  }, 2000)
+}
 
 async function saveSettings() {
   saving.value = true
@@ -53,14 +64,47 @@ async function saveSettings() {
               Show my progress publicly
             </span>
           </label>
-          <p 
+          <p
             class="text-sm mt-1 ml-8"
             :class="theme.isDark ? 'text-gray-500' : 'text-gray-500'"
           >
             When enabled, your username and days since last use will appear on the public dashboard.
           </p>
+
+          <!-- Public Link Copy Section -->
+          <div
+            v-if="isPublic"
+            class="mt-4 ml-8 p-4 rounded-lg"
+            :class="theme.isDark ? 'bg-gray-700' : 'bg-gray-50'"
+          >
+            <p
+              class="text-sm font-medium mb-2"
+              :class="theme.isDark ? 'text-gray-200' : 'text-gray-700'"
+            >
+              Your public profile link:
+            </p>
+            <div class="flex items-center gap-2">
+              <input
+                type="text"
+                readonly
+                :value="publicUrl"
+                class="flex-1 px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                :class="theme.isDark ? 'bg-gray-600 border-gray-500 text-gray-200' : 'bg-white border-gray-300 text-gray-700'"
+              />
+              <button
+                type="button"
+                @click="copyLink"
+                class="px-4 py-2 text-sm font-medium rounded-lg transition"
+                :class="copied
+                  ? 'bg-green-500 text-white'
+                  : 'bg-indigo-500 text-white hover:bg-indigo-600'"
+              >
+                {{ copied ? 'Copied!' : 'Copy' }}
+              </button>
+            </div>
+          </div>
         </div>
-        
+
         <!-- Submit -->
         <div class="flex items-center gap-4">
           <button 
