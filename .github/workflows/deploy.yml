@@ -48,4 +48,4 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            systemctl --user restart pocketbase
+            sudo systemctl restart pocketbase
