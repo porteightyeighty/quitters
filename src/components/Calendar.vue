@@ -3,6 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useTrackingStore } from '../stores/tracking'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
+import { toDateStr } from '../lib/date'
 
 
 const tracking = useTrackingStore()
@@ -56,22 +57,28 @@ const calendarDays = computed(() => {
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = toDateStr(date)
     days.push({ day, date: dateStr })
   }
 
   return days
 })
 
-const today = new Date()
-const todayStr = today.toISOString().split('T')[0]
+const todayStr = toDateStr(new Date())
+
+// The quit date the streak counts from — marked as the calendar's anchor day.
+const quitDateStr = computed(() => (auth.user?.quit_date || '').split(' ')[0] || null)
+
+function isQuitDate(dateStr) {
+  return !!quitDateStr.value && dateStr === quitDateStr.value
+}
 
 function isToday(dateStr) {
   return dateStr === todayStr
 }
 
 function isFuture(dateStr) {
-  return new Date(dateStr) > today
+  return dateStr > todayStr
 }
 
 function getEntryType(dateStr) {
@@ -166,6 +173,10 @@ onMounted(() => {
         <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
         <span :class="theme.isDark ? 'text-gray-400' : 'text-gray-600'">NRT</span>
       </div>
+      <div v-if="quitDateStr" class="flex items-center gap-1">
+        <span class="w-3 h-3 rounded-full ring-2 ring-green-500"></span>
+        <span :class="theme.isDark ? 'text-gray-400' : 'text-gray-600'">Quit date</span>
+      </div>
     </div>
 
     <!-- Weekday headers -->
@@ -183,6 +194,7 @@ onMounted(() => {
           'cursor-pointer': day && !isFuture(date),
           'cursor-not-allowed opacity-40': day && isFuture(date),
           'ring-2 ring-indigo-500': day && isToday(date),
+          'ring-2 ring-green-500': day && isQuitDate(date) && !isToday(date),
           [getEntryColor(getEntryType(date))]: day && getEntryType(date),
           'text-white': day && getEntryType(date),
           [theme.isDark ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100']: day && !getEntryType(date) && !isFuture(date)
@@ -199,7 +211,7 @@ onMounted(() => {
   <!-- Modal -->
   <Teleport to="body">
     <div v-if="showModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      click.self="showModal = false">
+      @click.self="showModal = false">
 
       <div class="rounded-xl shadow-xl p-6 w-full max-w-sm" :class="theme.isDark ? 'bg-gray-800' : 'bg-white'">
         <h3 class="text-lg font-semibold mb-1" :class="theme.isDark ? 'text-white' : 'text-gray-800'">
