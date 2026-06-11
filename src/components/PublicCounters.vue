@@ -1,22 +1,23 @@
 <script setup>
 import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
+import { daysSinceLatest } from '../lib/date'
 
 const props = defineProps({
   users: Array,
-  loading: Boolean
+  loading: Boolean,
+  currentUserId: String
 })
 
 const theme = useThemeStore()
 
+function isSelf(user) {
+  return props.currentUserId && user?.id === props.currentUserId
+}
+
 function getDaysSinceQuit(user) {
-  if (!user?.last_use_date) return null
-  const lastUse = new Date(user.last_use_date)
-  const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  lastUse.setHours(0, 0, 0, 0)
-  const diff = Math.floor((now - lastUse) / (1000 * 60 * 60 * 24))
-  return diff >= 0 ? diff : null
+  // Streak anchors on the quit date, unless a more recent slip (last_use_date) overrides it.
+  return daysSinceLatest([user?.quit_date, user?.last_use_date])
 }
 
 function getDisplayName(user) {
@@ -61,21 +62,31 @@ function getTopMilestone(days) {
           :key="user.id"
           :to="`/user/${user.id}`"
           class="rounded-xl shadow-sm p-4 flex items-center justify-between block hover:shadow-md transition-all duration-200"
-          :class="theme.isDark ? 'bg-gray-800' : 'bg-white'"
+          :class="[
+            theme.isDark ? 'bg-gray-800' : 'bg-white',
+            isSelf(user) ? 'ring-2 ring-indigo-500' : ''
+          ]"
         >
           <div class="flex items-center gap-3">
-            <div 
+            <div
               class="w-10 h-10 rounded-full flex items-center justify-center font-bold"
               :class="theme.isDark ? 'bg-gray-700 text-indigo-400' : 'bg-indigo-100 text-indigo-600'"
             >
               {{ getDisplayName(user).charAt(0).toUpperCase() }}
             </div>
             <div>
-              <p 
+              <p
                 class="font-medium"
                 :class="theme.isDark ? 'text-white' : 'text-gray-800'"
               >
                 {{ getDisplayName(user) }}
+                <span
+                  v-if="isSelf(user)"
+                  class="ml-1 px-1.5 py-0.5 rounded text-xs font-medium align-middle"
+                  :class="theme.isDark ? 'bg-indigo-900/50 text-indigo-400' : 'bg-indigo-100 text-indigo-700'"
+                >
+                  You
+                </span>
               </p>
               <p 
                 v-if="getTopMilestone(getDaysSinceQuit(user))" 
@@ -114,20 +125,30 @@ function getTopMilestone(days) {
           :key="user.id"
           :to="`/user/${user.id}`"
           class="rounded-xl shadow-sm p-4 block hover:shadow-md transition-all duration-200"
-          :class="theme.isDark ? 'bg-gray-800' : 'bg-white'"
+          :class="[
+            theme.isDark ? 'bg-gray-800' : 'bg-white',
+            isSelf(user) ? 'ring-2 ring-indigo-500' : ''
+          ]"
         >
           <div class="flex items-center gap-3 mb-2">
-            <div 
+            <div
               class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm"
               :class="theme.isDark ? 'bg-gray-700 text-indigo-400' : 'bg-indigo-100 text-indigo-600'"
             >
               {{ getDisplayName(user).charAt(0).toUpperCase() }}
             </div>
-            <span 
+            <span
               class="font-medium text-sm truncate"
               :class="theme.isDark ? 'text-white' : 'text-gray-800'"
             >
               {{ getDisplayName(user) }}
+            </span>
+            <span
+              v-if="isSelf(user)"
+              class="px-1.5 py-0.5 rounded text-xs font-medium"
+              :class="theme.isDark ? 'bg-indigo-900/50 text-indigo-400' : 'bg-indigo-100 text-indigo-700'"
+            >
+              You
             </span>
           </div>
           <div class="flex items-baseline gap-1">
