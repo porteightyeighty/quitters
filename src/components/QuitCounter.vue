@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useTrackingStore } from '../stores/tracking'
 import { useThemeStore } from '../stores/theme'
+import { daysSinceLatest } from '../lib/date'
 
 const props = defineProps({
   user: Object,
@@ -13,50 +14,27 @@ const theme = useThemeStore()
 const allEntries = ref([])
 const loading = ref(false)
 
+const quitDate = computed(() => props.user?.quit_date || null)
+
+function mostRecentEntryDate(types) {
+  const matching = allEntries.value.filter(e => types.includes(e.type))
+  if (matching.length === 0) return null
+  return matching.reduce((a, b) => (new Date(b.date) > new Date(a.date) ? b : a)).date
+}
+
 const daysSinceLastUse = computed(() => {
   if (!props.isOwn) {
-    if (!props.user?.last_use_date) return null
-    const lastUse = new Date(props.user.last_use_date)
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    lastUse.setHours(0, 0, 0, 0)
-    const diff = Math.floor((today - lastUse) / (1000 * 60 * 60 * 24))
-    return diff >= 0 ? diff : null
+    return daysSinceLatest([quitDate.value, props.user?.last_use_date])
   }
-  
-  if (allEntries.value.length === 0) return null
-  
-  const sorted = [...allEntries.value].sort((a, b) => 
-    new Date(b.date) - new Date(a.date)
-  )
-  
-  const lastUse = new Date(sorted[0].date)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  lastUse.setHours(0, 0, 0, 0)
-  
-  return Math.floor((today - lastUse) / (1000 * 60 * 60 * 24))
+  return daysSinceLatest([
+    quitDate.value,
+    mostRecentEntryDate(['smoked', 'vaped', 'nicotine_replacement'])
+  ])
 })
 
 const daysSinceSmokingOrVaping = computed(() => {
   if (!props.isOwn) return null
-  
-  const smokingVapingEntries = allEntries.value.filter(
-    e => e.type === 'smoked' || e.type === 'vaped'
-  )
-  
-  if (smokingVapingEntries.length === 0) return null
-  
-  const sorted = [...smokingVapingEntries].sort((a, b) => 
-    new Date(b.date) - new Date(a.date)
-  )
-  
-  const lastUse = new Date(sorted[0].date)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  lastUse.setHours(0, 0, 0, 0)
-  
-  return Math.floor((today - lastUse) / (1000 * 60 * 60 * 24))
+  return daysSinceLatest([quitDate.value, mostRecentEntryDate(['smoked', 'vaped'])])
 })
 
 const hasNrtEntries = computed(() => {
@@ -174,8 +152,10 @@ watch(() => tracking.entries, loadEntries, { deep: true })
         {{ isOwn ? "No entries yet" : "No data available" }}
       </p>
       <p v-if="isOwn" class="text-sm" :class="theme.isDark ? 'text-gray-500' : 'text-gray-400'">
-        Click a date on the calendar to log your first entry.<br>
-        Your streak starts counting from your last logged use.
+        Set your quit date in
+        <RouterLink to="/settings" class="text-indigo-500 hover:underline">Settings</RouterLink>
+        to start your streak.<br>
+        Logging a slip on the calendar resets the count from that day.
       </p>
     </div>
   </div>

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import pb from '../lib/pocketbase'
 import { useAuthStore } from './auth'
+import { toDateStr } from '../lib/date'
 
 export const useTrackingStore = defineStore('tracking', () => {
   const entries = ref([])
@@ -16,8 +17,8 @@ export const useTrackingStore = defineStore('tracking', () => {
     
     loading.value = true
     try {
-      const startDate = new Date(year, month, 1).toISOString().split('T')[0]
-      const endDate = new Date(year, month + 1, 0).toISOString().split('T')[0]
+      const startDate = toDateStr(new Date(year, month, 1))
+      const endDate = toDateStr(new Date(year, month + 1, 0))
       
       const records = await pb.collection('tracking_entries').getList(1, 100, {
         filter: `user = "${auth.user.id}" && date >= "${startDate}" && date <= "${endDate}"`,
@@ -52,7 +53,7 @@ export const useTrackingStore = defineStore('tracking', () => {
   async function setEntry(date, type) {
     if (!auth.user) return
     
-    const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date
+    const dateStr = date instanceof Date ? toDateStr(date) : date
     
     try {
       // Check if entry exists for this date
@@ -86,7 +87,7 @@ export const useTrackingStore = defineStore('tracking', () => {
   async function removeEntry(date) {
     if (!auth.user) return
     
-    const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date
+    const dateStr = date instanceof Date ? toDateStr(date) : date
     const existing = entries.value.find(e => e.date.split(' ')[0] === dateStr)
     
     if (existing) {
@@ -103,7 +104,7 @@ export const useTrackingStore = defineStore('tracking', () => {
 
   // Get entry for a specific date
   function getEntryForDate(date) {
-    const dateStr = date instanceof Date ? date.toISOString().split('T')[0] : date
+    const dateStr = date instanceof Date ? toDateStr(date) : date
     return entries.value.find(e => e.date.split(' ')[0] === dateStr)
   }
 

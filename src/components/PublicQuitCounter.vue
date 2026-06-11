@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
+import { daysSinceLatest } from '../lib/date'
 
 const props = defineProps({
   user: Object,
@@ -29,21 +30,14 @@ const hasNrt = computed(() =>
   (props.entries || []).some(e => e.type === 'nicotine_replacement')
 )
 
-function getDaysSince(dateStr) {
-  if (!dateStr) return null
-  const date = new Date(dateStr)
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  date.setHours(0, 0, 0, 0)
-  return Math.floor((today - date) / (1000 * 60 * 60 * 24))
-}
+const quitDate = computed(() => props.user?.quit_date || null)
 
-const daysSinceAll = computed(() => 
-  sortedAll.value.length > 0 ? getDaysSince(sortedAll.value[0].date) : null
+const daysSinceAll = computed(() =>
+  daysSinceLatest([quitDate.value, sortedAll.value[0]?.date])
 )
 
-const daysSinceSmokingVaping = computed(() => 
-  sortedSmokingVaping.value.length > 0 ? getDaysSince(sortedSmokingVaping.value[0].date) : null
+const daysSinceSmokingVaping = computed(() =>
+  daysSinceLatest([quitDate.value, sortedSmokingVaping.value[0]?.date])
 )
 
 const showDual = computed(() => 

@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useThemeStore } from '../stores/theme'
+import { toDateStr } from '../lib/date'
 
 const props = defineProps({
   entries: Array,
@@ -46,15 +47,14 @@ const calendarDays = computed(() => {
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day)
-    const dateStr = date.toISOString().split('T')[0]
+    const dateStr = toDateStr(date)
     days.push({ day, date: dateStr })
   }
 
   return days
 })
 
-const today = new Date()
-const todayStr = today.toISOString().split('T')[0]
+const todayStr = toDateStr(new Date())
 
 function isToday(dateStr) {
   return dateStr === todayStr
