@@ -33,7 +33,7 @@ onRecordAfterUpdateSuccess((e) => {
   try {
     const records = $app.findRecordsByFilter(
       "tracking_entries",
-      `user = "${userId}"`,
+      `user = "${userId}" && type != "nicotine_replacement"`,
       "-date",
       1
     );
@@ -58,7 +58,7 @@ onRecordAfterDeleteSuccess((e) => {
   try {
     const records = $app.findRecordsByFilter(
       "tracking_entries",
-      `user = "${userId}"`,
+      `user = "${userId}" && type != "nicotine_replacement"`,
       "-date",
       1
     );
