@@ -3,14 +3,20 @@ import { ref, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 import { useThemeStore } from "../stores/theme";
+import { toDateStr } from "../lib/date";
 
 const router = useRouter();
 const auth = useAuthStore();
 const theme = useThemeStore();
 
+function todayLocal() {
+  return toDateStr(new Date());
+}
+
 const username = ref("");
 const email = ref("");
 const password = ref("");
+const quitDate = ref(todayLocal());
 const error = ref("");
 const loading = ref(false);
 
@@ -19,7 +25,7 @@ async function handleRegister() {
   loading.value = true;
 
   try {
-    await auth.register(email.value, password.value, username.value);
+    await auth.register(email.value, password.value, username.value, quitDate.value);
     await nextTick();
     router.push("/");
   } catch (e) {
@@ -63,6 +69,33 @@ async function handleRegister() {
             "
             placeholder="QuitterPro123"
           />
+        </div>
+
+        <div>
+          <label
+            class="block text-sm font-medium mb-1"
+            :class="theme.isDark ? 'text-gray-300' : 'text-gray-700'"
+          >
+            Quit date
+          </label>
+          <input
+            type="date"
+            v-model="quitDate"
+            required
+            :max="todayLocal()"
+            class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+            :class="
+              theme.isDark
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                : 'bg-white border-gray-300 text-gray-900'
+            "
+          />
+          <p
+            class="text-xs mt-1"
+            :class="theme.isDark ? 'text-gray-500' : 'text-gray-500'"
+          >
+            When did you quit? Your streak counts from this day. You can change it later.
+          </p>
         </div>
 
         <div>

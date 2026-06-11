@@ -22,13 +22,14 @@ export const useAuthStore = defineStore('auth', () => {
     return authData
   }
 
-  async function register(email, password, username) {
+  async function register(email, password, username, quitDate) {
     const data = {
       email,
       password,
       passwordConfirm: password,
       username,
-      is_public: true
+      is_public: true,
+      quit_date: quitDate
     }
     await pb.collection('users').create(data)
     // Login after registration

@@ -2,11 +2,17 @@
 import { ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useThemeStore } from '../stores/theme'
+import { toDateStr } from '../lib/date'
 
 const auth = useAuthStore()
 const theme = useThemeStore()
 
+function todayLocal() {
+  return toDateStr(new Date())
+}
+
 const isPublic = ref(auth.user?.is_public ?? true)
+const quitDate = ref((auth.user?.quit_date || '').split(' ')[0])
 const saving = ref(false)
 const message = ref('')
 const copied = ref(false)
@@ -27,7 +33,8 @@ async function saveSettings() {
   
   try {
     await auth.updateProfile({
-      is_public: isPublic.value
+      is_public: isPublic.value,
+      quit_date: quitDate.value || null
     })
     message.value = 'Settings saved!'
   } catch (e) {
@@ -103,6 +110,29 @@ async function saveSettings() {
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Quit date -->
+        <div>
+          <label
+            class="block text-sm font-medium mb-1"
+            :class="theme.isDark ? 'text-gray-200' : 'text-gray-700'"
+          >
+            Quit date
+          </label>
+          <input
+            type="date"
+            v-model="quitDate"
+            :max="todayLocal()"
+            class="px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            :class="theme.isDark ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-700'"
+          />
+          <p
+            class="text-sm mt-1"
+            :class="theme.isDark ? 'text-gray-500' : 'text-gray-500'"
+          >
+            Your nicotine-free streak counts from this day, unless you log a more recent slip on the calendar.
+          </p>
         </div>
 
         <!-- Submit -->
